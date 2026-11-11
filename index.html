@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOS Teletekst 101</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #111; color: #ddd;
+    font-family: system-ui, -apple-system, sans-serif; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 16px; }
+  .bar { display: flex; justify-content: space-between; align-items: center;
+    gap: 8px; margin-bottom: 10px; font-size: 13px; color: #aaa; }
+  .bar button { background: #333; color: #ddd; border: 1px solid #555;
+    border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 13px; }
+  .bar button:hover { background: #444; }
+  .tt { background: #000; color: #fff; border-radius: 6px; padding: 12px;
+    overflow-x: auto; font-family: "DejaVu Sans Mono", "Courier New", Consolas, monospace;
+    font-size: 15px; line-height: 1.25; }
+  .tt pre { margin: 0; white-space: pre; }
+  /* Teletekst kleuren (dekt gangbare class-namen af) */
+  .tt .black,   .tt .zwart   { color: #000; }
+  .tt .red,     .tt .rood    { color: #f00; }
+  .tt .green,   .tt .groen   { color: #0f0; }
+  .tt .yellow,  .tt .geel    { color: #ff0; }
+  .tt .blue,    .tt .blauw   { color: #44f; }
+  .tt .magenta, .tt .cyaan   { color: #f0f; }
+  .tt .cyan                  { color: #0ff; }
+  .tt .white,   .tt .wit     { color: #fff; }
+  .tt .bg-black   { background: #000; }
+  .tt .bg-red     { background: #f00; }
+  .tt .bg-green   { background: #0f0; }
+  .tt .bg-yellow  { background: #ff0; }
+  .tt .bg-blue    { background: #00a; }
+  .tt .bg-magenta { background: #f0f; }
+  .tt .bg-cyan    { background: #0ff; }
+  .tt .bg-white   { background: #fff; }
+  .note { color: #ff0; white-space: pre-wrap; }
+  .foot { margin-top: 10px; font-size: 12px; color: #777; text-align: center; }
+  .foot a { color: #999; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bar">
+      <span>NOS Teletekst &middot; pagina 101</span>
+      <span>
+        <span id="time"></span>
+        <button id="refresh" type="button">Ververs</button>
+      </span>
+    </div>
+    <div class="tt" id="tt"><pre>Teletekst laden&hellip;</pre></div>
+    <div class="foot">
+      Live data van <a href="https://nos.nl/teletekst" target="_blank" rel="noopener">NOS Teletekst</a>.
+      Ververst automatisch elke 30&nbsp;seconden.
+    </div>
+  </div>
+  <script>
+    var PAGE = "101";
+    var API = "https://teletekst-data.nos.nl/json/" + PAGE;
+
+    function fmtTime() {
+      try { return new Date().toLocaleString("nl-NL"); }
+      catch (e) { return new Date().toString(); }
+    }
+
+    async function load() {
+      var tt = document.getElementById("tt");
+      try {
+        var res = await fetch(API, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var data = await res.json();
+        tt.innerHTML = data && data.content ? data.content : "<pre>Geen inhoud ontvangen.</pre>";
+        document.getElementById("time").textContent = fmtTime();
+      } catch (e) {
+        tt.innerHTML = '<pre class="note">Kon de teletekstpagina nu niet laden.\n(' +
+          (e && e.message ? e.message : e) +
+          ')\n\nDit kan door netwerk of CORS komen.\nKlik op "Ververs" om het opnieuw te proberen.</pre>';
+      }
+    }
+
+    document.getElementById("refresh").addEventListener("click", load);
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>
